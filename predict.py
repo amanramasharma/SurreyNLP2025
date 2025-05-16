@@ -1,6 +1,9 @@
 import torch
 from utils import token2idx, idx2label, load_model
 import numpy as np
+import csv
+from datetime import datetime
+import os
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 _model = None  # Lazy-loaded model
@@ -24,3 +27,12 @@ def predict_tags(text):
         preds = torch.argmax(logits, dim=-1)
         tags = [idx2label[i.item()] for i in preds[0]]
     return list(zip(tokens, tags))
+
+LOG_FILE = "logs/prediction_logs.csv"
+os.makedirs("logs", exist_ok=True)
+
+def log_prediction(text, tagged_output):
+    timestamp = datetime.now().isoformat()
+    with open(LOG_FILE, mode='a', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow([timestamp, text, str(tagged_output)])
