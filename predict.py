@@ -16,6 +16,14 @@ def get_model():
         _model.eval()
     return _model
 
+
+
+def log_prediction(text, tagged_output):
+    timestamp = datetime.now().isoformat()
+    with open(LOG_FILE, mode='a', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow([timestamp, text, str(tagged_output)])
+
 def predict_tags(text):
     model = get_model()
     tokens = text.strip().split()
@@ -26,13 +34,6 @@ def predict_tags(text):
         logits = model(x)
         preds = torch.argmax(logits, dim=-1)
         tags = [idx2label[i.item()] for i in preds[0]]
-    return list(zip(tokens, tags))
 
-LOG_FILE = "logs/prediction_logs.csv"
-os.makedirs("logs", exist_ok=True)
+    log_prediction(text, list(zip(tokens, tags)))
 
-def log_prediction(text, tagged_output):
-    timestamp = datetime.now().isoformat()
-    with open(LOG_FILE, mode='a', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow([timestamp, text, str(tagged_output)])
